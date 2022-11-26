@@ -1,0 +1,80 @@
+# ~/.profile: executed by Bourne-compatible login shells.
+
+if [ "$BASH" ]; then
+  if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+  fi
+fi
+
+mesg n || true
+
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+
+findomain1()
+{
+
+mkdir /home/zresearcher/newtargets/$1
+findomain -t $1 -u /home/zresearcher/newtargets/$1/$1.txt
+}
+
+
+subfinder1()
+{
+
+mkdir /home/zresearcher/newtargets/$1
+/home/zresearcher/go/bin/./subfinder -d $1 -o /home/zresearcher/newtargets/$1/subfinder.txt
+}
+
+
+assetfinder1()
+{
+
+mkdir /home/zresearcher/newtargets/$1
+/home/zresearcher/go/bin/./assetfinder --subs-only $1 | tee -a /home/zresearcher/newtargets/$1/assetfinder.txt
+}
+
+
+amass1()
+{
+
+mkdir /home/zresearcher/newtargets/$1
+/home/zresearcher/go/bin/./amass enum -d $1 -o /home/zresearcher/newtargets/$1/amass.txt
+}
+
+
+merge()
+{
+cat /home/zresearcher/newtargets/$1/*.txt | sort -u > /home/zresearcher/newtargets/$1/all.txt
+}
+
+
+hprobe()
+{
+cat /home/zresearcher/newtargets/$1/all.txt | /home/zresearcher/go/bin/./httprobe -c 50 -t 3000 -p 443,80 | tee -a /home/zresearcher/newtargets/$1/live-responsible.txt
+}
+
+aquatone1()
+{
+cat /home/zresearcher/newtargets/$1/live-responsible.txt | aquatone -out /home/zresearcher/newtargets/$1/aqua_out -threads 5
+}
+
+
+waybackurl1()
+{
+cat /home/zresearcher/newtargets/$1/live-responsible.txt |waybackurls > /home/zresearcher/newtargets/$1/waybackurl.txt
+}
+
+
+paramlist()
+{ 
+waybackurls $1 |  grep "?" | unfurl keys  | sort -u | tee -a paramlist.txt 
+}
+
+Recon1()
+{
+subfinder -d $1 --silent | tee -a hosts &&
+amass enum -passive -d $1 | tee -a hosts &&
+subjack -w hosts -t 100 -timeout 30 -ssl -v | tee -a takeovers
+}
+
